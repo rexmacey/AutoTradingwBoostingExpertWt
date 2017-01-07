@@ -1,0 +1,34 @@
+---
+title: "Project Notebook"
+author: "Rex Macey"
+date: "January 7, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This noteobook is contains notes, thoughts, references, and such for this project.  
+
+# Automated Trading with Boosting and Expert Weighting
+## Project Description
+
+A project to explore the research in the paper: Creamer, Germán G. and Freund, Yoav, Automated Trading with Boosting and Expert Weighting (April 1, 2010). Quantitative Finance, Vol. 4, No. 10, pp. 401–420 . Available at SSRN: https://ssrn.com/abstract=937847
+
+## Initial Steps - Data 
+1. Identify a set of companies and download historical prices.  
+  + To keep the project manageable, let's download about 5 years of prices for a couple of hundred compnaies. 
+2. Calulate as many indicators and signals as described in the appendix 
+
+## Journal
+This section is organized as a timeline to keep track of what was done when.
+01/07/2017 - Create directories, GITHUB.  Put a recent list of stocks in the ishares S&P 500 ETF into the data directory and extracted the equity tickers into Tickers.csv
+
+## Files
+This section describes files used in the project.
+* ProjectNotebook.RMD - this file
+* GetStockPrices.R - script to download stock prices for a sample of stocks
+* SP500_20170105.xls (data) - holdings of iShares S&P 500 ETF as of 1/5/2017. Used to get tickers for sample
+* Tickers.csv (data) - tickers of stocks to use in sample
+* quandldata.rds - output from GetStockPrices.R script. Contains price data downloaded from Quandl.
