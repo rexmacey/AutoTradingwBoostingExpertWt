@@ -23,7 +23,8 @@ A project to explore the research in the paper: Creamer, Germán G. and Freund, 
 
 ## Journal
 This section is organized as a timeline to keep track of what was done when.
-01/07/2017 - Create directories, GITHUB.  Put a recent list of stocks in the ishares S&P 500 ETF into the data directory and extracted the equity tickers into Tickers.csv
+01/07/2017 - Create directories, GITHUB.  Put a recent list of stocks in the ishares S&P 500 ETF into the data directory and extracted the equity tickers into Tickers.csv.  Started working on calculating the 
+technical indicators
 
 ## Files
 This section describes files used in the project.
@@ -32,3 +33,4 @@ This section describes files used in the project.
 * SP500_20170105.xls (data) - holdings of iShares S&P 500 ETF as of 1/5/2017. Used to get tickers for sample
 * Tickers.csv (data) - tickers of stocks to use in sample
 * quandldata.rds - output from GetStockPrices.R script. Contains price data downloaded from Quandl.
+* TechnicalIndicators.R - script to calculate technical indicators.
