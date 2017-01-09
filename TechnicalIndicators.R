@@ -1,5 +1,42 @@
 #Create Indicators
 library(TTR)
+
+# Crossover signal with 2 series (e.g. Price and one moving average)
+# Zero creates an additional signal when series 1 crosses above or below zero
+xo_signal_1<-function(series1,series2,Zero=FALSE){
+    out<-rep("Hold",nrow(series1))
+    idx <- (lag(series1) <= lag(series2)) & (series1 > series2)
+    out[idx]<-"xabove"
+    idx <- (lag(series1) >= lag(series2)) & (series1 < series2)
+    out[idx]<-"xbelow"
+    if(Zero){
+        idx <- (lag(series1) <= 0) & (series1 > 0)
+        out[idx]<-"xabove0"
+        idx <- (lag(series1) >= 0) & (series1 < 0)
+        out[idx]<-"xbelow0"
+    }
+    out<-factor(out,ordered = FALSE)
+    return(out)
+}
+# Crossover signal with 3 series (e.g. Price and two Bollinger bands)
+# Buy when 1 crosses below 2; Sell when 1 crosses above 3
+# If CrossBack then additional signals are generated with series one crosses back
+xo_signal_2<-function(series1,seriesLow,seriesHigh,CrossBack=FALSE){
+    out<-rep("Hold",nrow(series1))
+    idx <- (lag(series1) >= lag(seriesLow)) & (series1 < seriesLow)
+    out[idx]<-"xbelowbot"  # cross bottom from top
+    idx <- (lag(series1) <= lag(seriesHigh)) & (series1 > seriesHigh)
+    out[idx]<-"xabovetop" # cross top from below
+    if(CrossBack){
+        idx <- (lag(series1) < lag(seriesLow)) & (series1 >= seriesLow)
+        out[idx]<-"xabovebot" # cross bottom from below
+        idx <- (lag(series1) > lag(seriesHigh)) & (series1 <= seriesHigh)
+        out[idx]<-"xbelowtop" # cross top from above
+    }
+    out<-factor(out,ordered = FALSE)
+    return(out)
+}
+
 # For testing, load prices for a stock
 data.env<-readRDS("./data/qmoddata.rds")
 ticker<-"JPM"
@@ -18,56 +55,105 @@ p[,"Close"]<-p[,"Adjusted"] # p[,"Close"]*(p[,"Adjusted"]/p[,"Close"])
 p$med<-(Hi(p)+Lo(p))/2
 p$typ<-(Hi(p)+Lo(p)+Cl(p))/3
 p$wc<-(Hi(p)+Lo(p)+2*Cl(p))/4
-
+Adjp<-Ad(p) # This is to avoid repeated calls to the Ad function
 result<-data.frame(Y=rep(NA,nrow(p)),row.names = index(p))
 
-temp<-EMA(Ad(p),n=10,ratio=0.9)
-result$EMA1Ad<-temp/Ad(p)
-result$EMA1Med<-temp/p$med
-result$EMA1Typ<-temp/p$typ
-result$EMA1WC<-temp/p$wc
+# For EMA, trying different lookbacks using Ad for all
+result$EMA1<-EMA(Adjp,n=10,ratio=0.9)/Adjp
+result$EMA2<-EMA(Adjp,n=16,ratio=0.9)/Adjp
+result$EMA3<-EMA(Adjp,n=22,ratio=0.9)/Adjp
+result$EMA4<-EMA(Adjp,n=10,ratio=0.84)/Adjp
+result$EMA5<-EMA(Adjp,n=16,ratio=0.84)/Adjp
+result$EMA6<-EMA(Adjp,n=22,ratio=0.84)/Adjp
+result$EMA7<-EMA(Adjp,n=10,ratio=0.78)/Adjp
+result$EMA8<-EMA(Adjp,n=16,ratio=0.78)/Adjp
+result$EMA9<-EMA(Adjp,n=22,ratio=0.78)/Adjp
 
-temp<-EMA(Ad(p),n=10,ratio=0.84)
-result$EMA2Ad<-temp/Ad(p)
-result$EMA2Med<-temp/p$med
-result$EMA2Typ<-temp/p$typ
-result$EMA2WC<-temp/p$wc
-
-temp<-EMA(Ad(p),n=10,ratio=0.78)
-result$EMA3Ad<-temp/Ad(p)
-result$EMA3Med<-temp/p$med
-result$EMA3Typ<-temp/p$typ
-result$EMA3WC<-temp/p$wc
-
-result$SMA1<-SMA(Ad(p),10)/Ad(p)
-result$SMA2<-SMA(Ad(p),16)/Ad(p)
-result$SMA3<-SMA(Ad(p),22)/Ad(p)
+result$SMA1<-SMA(Adjp,10)/Adjp
+result$SMA2<-SMA(Adjp,16)/Adjp
+result$SMA3<-SMA(Adjp,22)/Adjp
 
 #Bollinger Bands
 # PctB = (Cl-dn)/(up-dn)
 # BBandRules are categorical
 # slightly different from paper. Price was above bottom, now below is a buy +1.
 # and price was below top, now above is a sell -1; otherwise hold 0
-temp<-BBands(Ad(p),n=20,sd=2)
+temp<-BBands(Adjp,n=20,sd=2)
 result$BBands1PctB<-temp$pctB  # Not in paper, adding anyway
-result$BBand1Rule<-0 # hold 
-idx<- lag(Ad(p))>=temp$dn & Ad(p)<temp$dn 
-result$BBand1Rule[idx]<-1 # buy
-idx<- lag(Ad(p))<=temp$up & Ad(p)>temp$up 
-result$BBand1Rule[idx]<- -1 # sell
+result$PBoll1up<-Adjp/temp$up
+result$PBoll1dn<-Adjp/temp$dn
+result$BBand1Rule<-xo_signal_2(Adjp,temp$dn,temp$up,TRUE)
 
-temp<-BBands(Ad(p),n=26,sd=2)
+temp<-BBands(Adjp,n=26,sd=2)
 result$BBands2PctB<-temp$pctB  # Not in paper, adding anyway
-result$BBand2Rule<-0 # hold 
-idx<- lag(Ad(p))>=temp$dn & Ad(p)<temp$dn 
-result$BBand2Rule[idx]<-1 # buy
-idx<- lag(Ad(p))<=temp$up & Ad(p)>temp$up 
-result$BBand2Rule[idx]<- -1 # sell
+result$PBoll2up<-Adjp/temp$up
+result$PBoll2dn<-Adjp/temp$dn
+result$BBand2Rule<-xo_signal_2(Adjp,temp$dn,temp$up,TRUE)
 
-temp<-BBands(Ad(p),n=32,sd=2)
+temp<-BBands(Adjp,n=32,sd=2)
 result$BBands3PctB<-temp$pctB  # Not in paper, adding anyway
-result$BBand3Rule<-0 # hold 
-idx<- lag(Ad(p))>=temp$dn & Ad(p)<temp$dn 
-result$BBand3Rule[idx]<-1 # buy
-idx<- lag(Ad(p))<=temp$up & Ad(p)>temp$up 
-result$BBand3Rule[idx]<- -1 # sell
+result$PBoll3up<-Adjp/temp$up
+result$PBoll3dn<-Adjp/temp$dn
+result$BBand3Rule<-xo_signal_2(Adjp,temp$dn,temp$up,TRUE) 
+
+temp<-momentum(Adjp,n=12)
+temp1<-EMA(temp,n=12,ratio=0.75)
+acc<-temp-lag(temp)
+result$MomEMA1<-temp/temp1
+result$MomRule1<-xo_signal_1(temp,temp1,FALSE)
+result$AccRule1<- xo_signal_1(acc,rep(0,nrow(acc)))
+
+temp<-momentum(Adjp,n=18)
+temp1<-EMA(temp,n=18,ratio=0.75)
+acc<-temp-lag(temp)
+result$MomEMA2<-temp/temp1
+result$MomRule2<-xo_signal_1(temp,temp1,FALSE)
+result$AccRule2<- xo_signal_1(acc,rep(0,nrow(acc)))
+
+temp<-momentum(Adjp,n=24)
+temp1<-EMA(temp,n=24,ratio=0.75)
+acc<-temp-lag(temp)
+result$MomEMA3<-temp/temp1
+result$MomRule3<-xo_signal_1(temp,temp1,FALSE)
+result$AccRule3<- xo_signal_1(acc,rep(0,nrow(acc)))
+
+temp <- ROC(Adjp,10)
+result$ROC1<-temp
+result$ROCRule1<-xo_signal_1(temp,rep(0,nrow(temp)))
+
+temp <- ROC(Adjp,16)
+result$ROC2<-temp
+result$ROCRule2<-xo_signal_1(temp,rep(0,nrow(temp)))
+
+temp <- ROC(Adjp,22)
+result$ROC3<-temp
+result$ROCRule3<-xo_signal_1(temp,rep(0,nrow(temp)))
+
+result$MACD1<-MACD(Adjp,nFast = 12,nSlow=18,nsig=9,percent = TRUE)
+temp<-MACD(Adjp,nFast = 12,nSlow=18,nsig=9,percent = FALSE)
+result$MACDR1 <- temp$macd / temp$signal
+result$MACDRule1<-xo_signal_1(temp$macd,temp$signal,TRUE)
+
+result$MACD2<-MACD(Adjp,nFast = 12,nSlow=24,nsig=9,percent = TRUE)
+temp<-MACD(Adjp,nFast = 12,nSlow=24,nsig=9,percent = FALSE)
+result$MACDR2 <- temp$macd / temp$signal
+result$MACDRule2<-xo_signal_1(temp$macd,temp$signal,TRUE)
+
+result$MACD3<-MACD(Adjp,nFast = 12,nSlow=30,nsig=9,percent = TRUE)
+temp<-MACD(Adjp,nFast = 12,nSlow=30,nsig=9,percent = FALSE)
+result$MACDR3 <- temp$macd / temp$signal
+result$MACDRule3<-xo_signal_1(temp$macd,temp$signal,TRUE)
+
+temp<-RSI(Adjp,8)
+result$RSI1<-temp
+result$RSIRule1<-xo_signal_2(temp,rep(30,nrow(temp)),rep(70,nrow(temp)))
+
+temp<-RSI(Adjp,14)
+Result$RSI2<-temp
+Result$RSIRule2<-0
+result$RSIRule2<-xo_signal_2(temp,rep(30,nrow(temp)),rep(70,nrow(temp)))
+
+temp<-RSI(Adjp,20)
+Result$RSI3<-temp
+result$RSIRule3<-xo_signal_2(temp,rep(30,nrow(temp)),rep(70,nrow(temp)))
+
