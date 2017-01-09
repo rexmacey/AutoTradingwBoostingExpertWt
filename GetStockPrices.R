@@ -1,23 +1,6 @@
 # Script to get historical data for a set of tickers
 
 tickers<-read.csv("./data/tickers.csv",stringsAsFactors = FALSE)
-
-# # Quandl version
-# library("Quandl")
-# Quandl.api_key(Sys.getenv("QUANDL_TOKEN"))
-# sdate<-as.Date("2011/12/31","%Y/%m/%d")
-# edate<-as.Date("2016/12/31","%Y/%m/%d")
-# qcodes<-paste0("YAHOO/",tickers[,1])
-# 
-# if(!file.exists("./data/quandldata.rds")){
-#     # The following will put all the data into one data frame and save it
-#     qdata <- Quandl(qcodes,type="xts",start_date=sdate,end_date=edate)
-#     saveRDS(qdata,"./data/quandldata.rds")    
-# } else {
-#     qdata<-readRDS("./data/quandldata.rds")
-# }
-
-# Quantmod version
 sdate<-"2011-12-30"
 edate<-"2016-12-31"
 library(quantmod)
@@ -50,3 +33,24 @@ summary(number.of.prices)
 idx<-number.of.prices<max(number.of.prices)
 sum(idx)
 tickers.found[idx]
+
+# get prices for S&P 500
+getSymbols("SPY", auto.assign = TRUE, from=sdate, to=edate)
+saveRDS(SPY,"./data/SPY.rds")
+
+# # Quandl version
+# library("Quandl")
+# Quandl.api_key(Sys.getenv("QUANDL_TOKEN"))
+# sdate<-as.Date("2011/12/31","%Y/%m/%d")
+# edate<-as.Date("2016/12/31","%Y/%m/%d")
+# qcodes<-paste0("YAHOO/",tickers[,1])
+# 
+# if(!file.exists("./data/quandldata.rds")){
+#     # The following will put all the data into one data frame and save it
+#     qdata <- Quandl(qcodes,type="xts",start_date=sdate,end_date=edate)
+#     saveRDS(qdata,"./data/quandldata.rds")    
+# } else {
+#     qdata<-readRDS("./data/quandldata.rds")
+# }
+
+# Quantmod version
