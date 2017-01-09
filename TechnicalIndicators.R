@@ -149,11 +149,37 @@ result$RSI1<-temp
 result$RSIRule1<-xo_signal_2(temp,rep(30,nrow(temp)),rep(70,nrow(temp)))
 
 temp<-RSI(Adjp,14)
-Result$RSI2<-temp
-Result$RSIRule2<-0
+result$RSI2<-temp
+result$RSIRule2<-0
 result$RSIRule2<-xo_signal_2(temp,rep(30,nrow(temp)),rep(70,nrow(temp)))
 
 temp<-RSI(Adjp,20)
-Result$RSI3<-temp
+result$RSI3<-temp
 result$RSIRule3<-xo_signal_2(temp,rep(30,nrow(temp)),rep(70,nrow(temp)))
 
+temp<-stoch(p[,c("High","Low","Close")],nFastK=12,nSlowD = 3)
+result$fastk1<-temp$fastK
+result$fastD1<-temp$fastD
+result$slowD1<-temp$slowD
+result$fastRule1<-xo_signal_1(temp$fastK,temp$fastD)
+result$slowRule1<-xo_signal_1(temp$fastK,temp$slowD)
+result$slowRatio1<- temp$fastK/temp$slowD
+result$fastRatio1<- temp$fastK/temp$fastD
+
+temp<-stoch(p[,c("High","Low","Close")],nFastK=18,nSlowD = 3)
+result$fastk2<-temp$fastK
+result$fastD2<-temp$fastD
+result$slowD2<-temp$slowD
+result$fastRule2<-xo_signal_1(temp$fastK,temp$fastD)
+result$slowRule2<-xo_signal_1(temp$fastK,temp$slowD)
+result$slowRatio2<- temp$fastK/temp$slowD
+result$fastRatio2<- temp$fastK/temp$fastD
+
+temp<-stoch(p[,c("High","Low","Close")],nFastK=24,nSlowD = 3)
+result$fastk3<-temp$fastK
+result$fastD3<-temp$fastD
+result$slowD3<-temp$slowD
+result$fastRule3<-xo_signal_1(temp$fastK,temp$fastD)
+result$slowRule3<-xo_signal_1(temp$fastK,temp$slowD)
+result$slowRatio3<- temp$fastK/temp$slowD
+result$fastRatio3<- temp$fastK/temp$fastD
