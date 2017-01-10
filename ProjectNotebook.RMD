@@ -25,6 +25,7 @@ A project to explore the research in the paper: Creamer, Germán G. and Freund, 
 This section is organized as a timeline to keep track of what was done when.
 01/07/2017 - Create directories, GITHUB.  Put a recent list of stocks in the ishares S&P 500 ETF into the data directory and extracted the equity tickers into Tickers.csv.  Started working on calculating the 
 technical indicators
+01/09/2017 Updated the Technical Indicators to calculate the features as a function.  Made all the functions through stochastic.
 
 ## Files
 This section describes files used in the project.
@@ -34,3 +35,5 @@ This section describes files used in the project.
 * Tickers.csv (data) - tickers of stocks to use in sample
 * quandldata.rds - output from GetStockPrices.R script. Contains price data downloaded from Quandl.
 * TechnicalIndicators.R - script to calculate technical indicators.
+* Beta.R calculates rolling betas for all tickers in data.env
+* Betas.rds (data) - all the betas from Beta.R
