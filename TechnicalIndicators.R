@@ -185,6 +185,15 @@ calc_features<-function(p){
     result$slowRule3<-xo_signal_1(temp$fastK,temp$slowD)
     result$slowRatio3<- temp$fastK/temp$slowD
     result$fastRatio3<- temp$fastK/temp$fastD
+    result$WILL<-WPR(p[,c("High","Low","Close")],n=14)
+    result$WILLRule<-xo_signal_2(result$WILL,rep(0.20,nrow(result)),rep(0.80,nrow(result)))
+    result$MFI<-MFI(p[,c("High","Low","Close")],p[,"Volume"],n=14)
+    result$MFIRule<-xo_signal_2(result$MFI,rep(20,nrow(result)),rep(80,nrow(result)))
+    temp<-chaikinVolatility(p[,c("High","Low")],n=10)
+    result$CHV<-temp/lag(temp,10)-1
+    result$GK<-volatility(p[,c("Open","High","Low","Close")],calc = "garman.klass")
+    result$GKYZ<-volatility(p[,c("Open","High","Low","Close")],calc = "gk.yz")
+    result$YangZhang<-volatility(p[,c("Open","High","Low","Close")],calc = "yang.zhang")
     return(result)
 }
 # For testing, load prices for a stock
@@ -194,3 +203,13 @@ p<-data.env[[ticker]]
 colnames(p)<-c("Open","High","Low","Close","Volume","Adjusted")
 
 test<-calc_features(p)
+summary(test)
+
+
+#Julius' code
+temp<-chaikinAD(p[,c("High","Low","Close")],p[,"Volume"])
+CHO<-EMA(temp,3)-EMA(temp,10)
+result$ADL <- temp
+result$CHO <- CHO
+result$CHORule <- sign(CHO)
+
